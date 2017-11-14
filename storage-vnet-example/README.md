@@ -30,10 +30,10 @@ az group deployment create --name azdemo --resource-group azdemo --template-file
 az group delete --name azdemo --yes --no-wait
 ```
 ### Deploy to Azure
-<a href="https%3A%2F%2Fraw.githubusercontent.com%2Fyooakim%2Farm%2Fmaster%2Fstorage-vnet-example%2Fsetup.json" target="_blank">
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fyooakim%2Farm%2Fmaster%2Fstorage-vnet-example%2Fsetup.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png"/>
 </a>
-<a href="https%3A%2F%2Fraw.githubusercontent.com%2Fyooakim%2Farm%2Fmaster%2Fstorage-vnet-example%2Fsetup.json" target="_blank">
+<a href="http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2Fyooakim%2Farm%2Fmaster%2Fstorage-vnet-example%2Fsetup.json" target="_blank">
     <img src="http://armviz.io/visualizebutton.png"/>
 </a>
 
