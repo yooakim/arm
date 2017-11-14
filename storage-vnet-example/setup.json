@@ -1,0 +1,150 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "prefix": {
+            "type": "string",
+            "metadata": {
+                "description": "The Basefarm customer prefix, three characters which is used to name resources for easier administration"
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "defaultValue": "tmadmin",
+            "metadata": {
+                "description": "The admin username to use."
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The password for the admin user"
+            }
+        }
+    },
+    "variables": {
+        "prefix": "[toLower(parameters('prefix'))]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2017-06-01",
+            "name": "[concat(variables('prefix'),'tma',uniqueString(resourceGroup().id))]",
+            "location": "[resourceGroup().location]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "sku": {
+                "name": "Standard_LRS"
+            },
+            "kind": "Storage",
+            "properties": {
+                "supportsHttpsTrafficOnly": false,
+                "encryption": {
+                    "services": {
+                        "blob": {
+                            "enabled": true
+                        },
+                        "file": {
+                            "enabled": true
+                        }
+                    },
+                    "keySource": "Microsoft.Storage"
+                }
+            },
+            "tags": {
+                "customer": "[variables('prefix')]"
+            },
+            "dependsOn": []
+        },
+        {
+            "apiVersion": "2017-06-01",
+            "name": "bf-azure-vnet",
+            "type": "Microsoft.Network/virtualNetworks",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "customer": "[variables('prefix')]"
+            },
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "172.16.0.0/22"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "web",
+                        "properties": {
+                            "addressPrefix": "172.16.0.0/24"
+                        }
+                    },
+                    {
+                        "name": "app",
+                        "properties": {
+                            "addressPrefix": "172.16.1.0/24"
+                        }
+                    },
+                    {
+                        "name": "db",
+                        "properties": {
+                            "addressPrefix": "172.16.2.0/24"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[concat(variables('prefix'),'-pip')]",
+            "apiVersion": "2017-06-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "customer": "[variables('prefix')]"
+            },
+            "properties": {
+                "publicIPAddressVersion": "IPv4",
+                "publicIPAllocationMethod": "Dynamic",
+                "idleTimeoutInMinutes": 4,
+                "dnsSettings": {
+                    "domainNameLabel": "[concat(variables('prefix'),'-pip')]"
+                }
+            }
+        },
+        {
+            "apiVersion": "2015-06-15",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[concat(variables('prefix'),'-nsg')]",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "customer": "[variables('prefix')]"
+            },
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "default-allow-rdp",
+                        "properties": {
+                            "priority": 1000,
+                            "protocol": "Tcp",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "sourceAddressPrefix": "*",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "*",
+                            "destinationPortRange": "3389"
+                        }
+                    },
+                    {
+                        "name": "default-allow-ssh",
+                        "properties": {
+                            "priority": 1010,
+                            "protocol": "Tcp",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "sourceAddressPrefix": "*",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "*",
+                            "destinationPortRange": "22"
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}
